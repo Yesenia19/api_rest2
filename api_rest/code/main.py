@@ -44,4 +44,27 @@ async def get_token(credentials: HTTPBasicCredentials = Depends(securityBasic)):
         print(f"ERROR:{error}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
+@app.get("/user/",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Regresa información de un usuario", # aparece en la documentacion de la api
+    description="Regresa información de un usuario",
+    tags=["auth"]
+    )
+
+async def get_user(credentials: HTTPAuthorizationCredentials = Depends(securityBearer)):
+    try:
+        auth=firebase.auth()
+        user= auth.get_account_info(credentials.credentials)
+        uid = user["users"][0]["localId"]
+
+        db =firebase.database()
+        user_data =db.child("usuarios").child(uid).get().val()
+        response = {
+            "Datos de usuario" : user_data
+        }
+        return response
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
 
