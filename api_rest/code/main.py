@@ -24,7 +24,7 @@ securityBearer=HTTPBearer()
 def root():
     return {"message": "Hello world"}
 
-@app.get("/users/token",
+@app.get("/user/validate",
     status_code=status.HTTP_202_ACCEPTED,
     summary="Regresa el token de un usuario", # aparece en la documentacion de la api
     description="Regresa el token de un usuario",
