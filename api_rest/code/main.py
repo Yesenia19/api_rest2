@@ -1,8 +1,10 @@
 from fastapi import Depends, FastAPI, HTTPException, status, Security
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
+from pydantic import BaseModel
+from typing import List
 import pyrebase
+from fastapi.middleware.cors import CORSMiddleware
 
 app= FastAPI()
 firebaseConfig = {
@@ -19,6 +21,24 @@ firebase=pyrebase.initialize_app(firebaseConfig)
 
 securityBasic=HTTPBasic()
 securityBearer=HTTPBearer()
+
+class Usuarios_nuevos(BaseModel): 
+    email: str
+    password: str
+
+
+origins = [
+    "https://8080-yesenia19-apirest2-bisfphn4p0y.ws-us54.gitpod.io",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins= origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def root():
@@ -67,4 +87,21 @@ async def get_user(credentials: HTTPAuthorizationCredentials = Depends(securityB
         print(f"ERROR:{error}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
-
+@app.post("/user/",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Crea un usuario", # aparece en la documentacion de la api
+    description="Crea un usuario",
+    tags=["Users"]
+    )
+async def POST_user(usuario: Usuarios_nuevos):
+    try:
+        auth=firebase.auth()
+        db =firebase.database()
+        user= auth.create_user_with_email_and_password(usuario.email, usuario.password)
+        uid = user["localId"]
+        db.child("usuarios").child(uid).set({"user_name": usuario.email, "level": 1 })
+        response = {"mensaje":"Usario agregado"}
+        return  response
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
