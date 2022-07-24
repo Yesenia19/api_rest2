@@ -2,6 +2,7 @@ import web
 urls=(
     "/",  "index",
     "/crear_usuario",     "crearUsuario",
+    "/login",     "login",
 )
 
 app = web.application(urls, globals())

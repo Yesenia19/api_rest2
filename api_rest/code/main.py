@@ -99,7 +99,7 @@ async def POST_user(usuario: Usuarios_nuevos):
         db =firebase.database()
         user= auth.create_user_with_email_and_password(usuario.email, usuario.password)
         uid = user["localId"]
-        db.child("usuarios").child(uid).set({"user_name": usuario.email, "level": 1 })
+        db.child("usuarios").child(uid).set({"user_name": usuario.email, "level": "user" })
         response = {"mensaje":"Usario agregado"}
         return  response
     except Exception as error:
