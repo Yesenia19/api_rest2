@@ -8,7 +8,7 @@ function inicioSesion(){
        
         
         var request = new XMLHttpRequest();
-        request.open('GET', 'https://8000-yesenia19-apirest2-bisfphn4p0y.ws-us54.gitpod.io/user/validate', true);
+        request.open('GET', 'https://8000-yesenia19-apirest2-bisfphn4p0y.ws-us59.gitpod.io/user/validate', true);
         request.setRequestHeader("Accept", "application/json");
         request.setRequestHeader("Authorization", "Basic " + btoa(email.value + ":" + pass.value));
         request.setRequestHeader("Content-Type", "application/json");
@@ -21,8 +21,6 @@ function inicioSesion(){
                     alert(json.detail);
                     
                 }
-                
-
                 if (request.status == 202){
                     const response = request.responseText;
                     const json = JSON.parse(response);

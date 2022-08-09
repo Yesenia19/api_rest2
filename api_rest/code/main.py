@@ -1,6 +1,10 @@
+import hashlib  # importa la libreria hashlib permite generar un hash
+import os # trabajar con rutas permitiendo que las ajuste de acuerdo al sistema operativo que se utilice 
 from fastapi import Depends, FastAPI, HTTPException, status, Security
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+DATABASE_URL = os.path.join("sql/clientes.sqlite")
+import sqlite3
 from pydantic import BaseModel
 from typing import List
 import pyrebase
@@ -26,9 +30,20 @@ class Usuarios_nuevos(BaseModel):
     email: str
     password: str
 
+class clientes(BaseModel): 
+    nombre: str
+    email: str
+
+class cliente(BaseModel): 
+    id:int
+
+class actualizar(BaseModel): 
+    id:int
+    nombre: str
+    email: str
 
 origins = [
-    "https://8080-yesenia19-apirest2-bisfphn4p0y.ws-us54.gitpod.io",
+    "https://8080-yesenia19-apirest2-bisfphn4p0y.ws-us59.gitpod.io",
 ]
 
 app.add_middleware(
@@ -102,6 +117,94 @@ async def POST_user(usuario: Usuarios_nuevos):
         db.child("usuarios").child(uid).set({"user_name": usuario.email, "level": "user" })
         response = {"mensaje":"Usario agregado"}
         return  response
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+@app.post("/clientes/",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Crea un cliente", # aparece en la documentacion de la api
+    description="Crea un cliente",
+    tags=["clientes"]
+    )
+async def POST_cliente(usuario: clientes, credentials: HTTPAuthorizationCredentials = Depends(securityBearer)):
+    try:
+        with sqlite3.connect('sql/clientes.sqlite') as connection:
+            connection.row_factory=sqlite3.Row
+            #cursor para realizar las operaciones en la BD
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO clientes (nombre, email) values ('{}','{}');".format(usuario.nombre,usuario.email))
+            #ordena los formatos en json
+            response = {"mensaje":"Cliente agregado"}
+            return  response
+            if response is None:
+                raise HTTPException(
+                    status_code = status.HTTP_404_NOT_FOUND,
+                    detail="ID no encontrado",
+                    headers={"WWW-Authenticate": "Basic"},
+                )
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+@app.get("/clientes/{id}",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Obtener un cliente", # aparece en la documentacion de la api
+    description="Obtener un cliente",
+    tags=["clientes"]
+    )
+async def GET_cliente(id :int, credentials: HTTPAuthorizationCredentials = Depends(securityBearer)):
+    try:
+        with sqlite3.connect('sql/clientes.sqlite') as connection:
+            connection.row_factory=sqlite3.Row
+            #cursor para realizar las operaciones en la BD
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM clientes where id_cliente={}".format(id))
+            #ordena los formatos en json
+            response = cursor.fetchone()
+            return response
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+@app.put(  "/clientes/",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Actualiza un cliente", # aparece en la documentacion de la api
+    description="Actualiza un cliente",
+    tags=["clientes"]
+)
+async def put_cliente(usuario: actualizar, credentials: HTTPAuthorizationCredentials = Depends(securityBearer)):
+    try:
+        #conexion a una bd cierra automaticamente el archivo que se utilice
+        with sqlite3.connect('sql/clientes.sqlite') as connection:
+            connection.row_factory=sqlite3.Row
+            #cursor para realizar las operaciones en la BD
+            cursor = connection.cursor()
+            cursor.execute("UPDATE clientes SET nombre='{}', email='{}' WHERE id_cliente={} ;".format(usuario.nombre,usuario.email,usuario.id))
+            #ordena los formatos en json
+            response = {"mensaje":"Cliente actualizado"}
+            return  response
+    except Exception as error:
+        print(f"ERROR:{error}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+@app.delete("/clientes/{id}",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Elimina un cliente", # aparece en la documentacion de la api
+    description="Elimina un cliente",
+    tags=["clientes"]
+    )
+async def delete_cliente(id :int, credentials: HTTPAuthorizationCredentials = Depends(securityBearer)):
+    try:
+        with sqlite3.connect('sql/clientes.sqlite') as connection:
+            connection.row_factory=sqlite3.Row
+            #cursor para realizar las operaciones en la BD
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM clientes WHERE id_cliente={};".format(id))
+            #ordena los formatos en json
+            response = {"mensaje":"Cliente borrado"}
+            return  response
     except Exception as error:
         print(f"ERROR:{error}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

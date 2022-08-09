@@ -12,11 +12,12 @@ function crearUsuario(){
             "password": pass2.value
         }
         var request = new XMLHttpRequest();
-        request.open('POST', 'https://8000-yesenia19-apirest2-bisfphn4p0y.ws-us54.gitpod.io/user/', true);
+        request.open('POST', 'https://8000-yesenia19-apirest2-bisfphn4p0y.ws-us59.gitpod.io/user/', true);
         request.setRequestHeader("Accept", "application/json");
         request.setRequestHeader("Content-Type", "application/json");
         request.onload = () => {
-                // Almacena la respuesta en una variable, si es 202 es que se obtuvo correctamente
+                
+            
                 const response = request.responseText;
                 const json = JSON.parse(response);
 
